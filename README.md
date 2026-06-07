@@ -1,0 +1,7 @@
+# Papers 09 — Open Models & Architectures
+
+A presentation deck tracing the open-weights lineage of large language models and the architectural and efficiency tricks that made them practical to run. It walks through five landmark publications — Meta's **LLaMA** (arXiv:2302.13971), which paired RMSNorm, RoPE and SwiGLU with public-data-only training to let a 13B model rival GPT-3 175B and catalyse the open ecosystem; **Llama 2** (arXiv:2307.09288), which added a permissive commercial license, an SFT + RLHF (rejection sampling + PPO) alignment pipeline, Grouped-Query Attention and Ghost Attention; **Mistral 7B** (arXiv:2310.06825), with sliding-window attention, GQA and a rolling-buffer KV cache under Apache 2.0; **Mixtral of Experts** (arXiv:2401.04088), a sparse top-2-of-8 mixture-of-experts decoder with 47B total but ~13B active parameters; and the **DeepSeek-V3 Technical Report** (arXiv:2412.19437), a 671B/~37B-active MoE introducing Multi-head Latent Attention, auxiliary-loss-free load balancing, FP8 mixed-precision training and multi-token prediction at frontier quality on a famously low budget. Each slide covers the problem, the specific contribution, why it matters to a practising engineer, a graphical element, and a comparison of params / active params / context / license across the models.
+
+**Live site:** https://brendanjameslynskey.github.io/Papers_09_Open_Models_and_Architectures/
+
+Part of the [Key LLM Publications sub-hub](https://github.com/BrendanJamesLynskey/LLM_Hub_Key_Publications)

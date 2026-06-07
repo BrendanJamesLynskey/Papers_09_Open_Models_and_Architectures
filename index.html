@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papers 09 — Open Models &amp; Architectures</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-card: #0d1117;
+            --bg-code: #161b22;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #76B900;
+            --accent-dim: #76B90044;
+            --accent-glow: #76B90033;
+            --border: #21262d;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-body: 'Inter', sans-serif;
+            --max-width: 900px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero > * { position: relative; z-index: 1; }
+        .series-label {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+        .hero h1 .accent { color: var(--accent); }
+        .hero .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 640px;
+            margin-bottom: 2rem;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+        .tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            white-space: nowrap;
+        }
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+            max-width: var(--max-width);
+        }
+        .pipeline-step {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 0.3rem 0.7rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .pipeline-arrow { color: var(--accent); font-size: 0.9rem; font-weight: 700; }
+        .slide {
+            min-height: 100vh;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .slide-number {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--accent-dim);
+            position: absolute;
+            top: 2rem;
+            right: 1.5rem;
+            line-height: 1;
+            user-select: none;
+        }
+        .slide h2 {
+            font-family: var(--font-display);
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
+        }
+        .slide h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .slide p { margin-bottom: 1rem; color: var(--text-secondary); }
+        .slide p strong { color: var(--text-primary); }
+        .slide ul, .slide ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--text-secondary); }
+        .slide li { margin-bottom: 0.4rem; }
+        .slide li strong { color: var(--text-primary); }
+        .slide code {
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            padding: 0.05rem 0.35rem;
+            border-radius: 3px;
+            color: #c9d1d9;
+        }
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1.25rem 0;
+            overflow: hidden;
+        }
+        .code-header {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            background: rgba(118, 185, 0, 0.08);
+            padding: 0.4rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .code-block pre { margin: 0; padding: 1rem; overflow-x: auto; }
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #c9d1d9;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+        .kw { color: #ff7b72; }
+        .fn { color: #d2a8ff; }
+        .str { color: #a5d6ff; }
+        .cm { color: #8b949e; font-style: italic; }
+        .num { color: #79c0ff; }
+        .type { color: #ffa657; }
+        .dir { color: #ff7b72; }
+        .mac { color: #ffa657; }
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-display);
+            white-space: nowrap;
+        }
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: rgba(13, 17, 23, 0.5); }
+        .diagram-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .diagram-box {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-align: center;
+            white-space: nowrap;
+        }
+        .diagram-box.accent { border-color: var(--accent); color: var(--accent); background: rgba(118, 185, 0, 0.08); }
+        .diagram-box.dim { color: var(--text-secondary); border-color: var(--border); }
+        .diagram-arrow { color: var(--accent); font-size: 1.3rem; font-weight: 700; }
+        .diagram-vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .diagram-vertical .diagram-arrow { font-size: 1.1rem; }
+        .hierarchy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .hierarchy-level { display: flex; align-items: center; gap: 0.75rem; }
+        .hierarchy-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 80px;
+            text-align: right;
+        }
+        .hierarchy-items { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .hierarchy-item {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .hierarchy-item.accent { border-color: var(--accent); color: var(--accent); background: rgba(118, 185, 0, 0.08); }
+        .diagram-grid {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .diagram-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .diagram-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .diagram-panel {
+            padding: 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+        .diagram-panel.accent-border { border-left: 3px solid var(--accent); }
+        .diagram-panel h4 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .diagram-panel p, .diagram-panel ul { font-size: 0.85rem; }
+        .callout {
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+        }
+        .callout p { margin-bottom: 0; }
+        .callout p + p { margin-top: 0.5rem; }
+        .callout .callout-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3rem;
+        }
+        .contents-list { list-style: none; padding-left: 0; counter-reset: contents; }
+        .contents-list li {
+            counter-increment: contents;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .contents-list li:last-child { border-bottom: none; }
+        .contents-list li::before {
+            content: counter(contents, decimal-leading-zero);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 2rem;
+        }
+        .contents-list a { color: var(--text-primary); text-decoration: none; transition: color 0.2s; }
+        .contents-list a:hover { color: var(--accent); }
+        .footer {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+        .footer a { color: var(--accent); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .canvas-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.25rem 0;
+            overflow-x: auto;
+        }
+        .canvas-wrap canvas, .canvas-wrap svg { display: block; margin: 0 auto; max-width: 100%; }
+        .badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            vertical-align: middle;
+            margin-left: 0.3rem;
+        }
+        .badge.ok    { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .badge.warn  { border-color: #ffa657; color: #ffa657; background: rgba(255,166,87,0.08); }
+        .badge.bad   { border-color: #ff7b72; color: #ff7b72; background: rgba(255,123,114,0.08); }
+        @media (max-width: 640px) {
+            .slide { padding: 3rem 1rem; min-height: auto; }
+            .slide-number { font-size: 3rem; top: 1.5rem; right: 1rem; }
+            .slide h2 { font-size: 1.5rem; }
+            .diagram-grid.cols-2, .diagram-grid.cols-3 { grid-template-columns: 1fr; }
+            .pipeline { gap: 0.15rem; }
+            .pipeline-step { font-size: 0.6rem; padding: 0.2rem 0.4rem; }
+            .hero h1 { font-size: 1.8rem; }
+            table { font-size: 0.78rem; }
+        }
+    </style>
+</head>
+<body>
+<header class="hero">
+    <div class="series-label">Key LLM Publications Series &mdash; Presentation 09</div>
+    <h1>Open Models &amp; <span class="accent">Architectures</span></h1>
+    <p class="subtitle">The open-weights lineage from LLaMA to DeepSeek-V3, and the architectural tricks &mdash; RMSNorm, RoPE, SwiGLU, GQA, sliding-window attention, sparse MoE, and multi-head latent attention &mdash; that made these models efficient enough to run anywhere.</p>
+    <div class="tags">
+        <span class="tag">LLaMA</span>
+        <span class="tag">Llama 2</span>
+        <span class="tag">Mistral</span>
+        <span class="tag">Mixtral</span>
+        <span class="tag">DeepSeek-V3</span>
+        <span class="tag">Open Weights</span>
+    </div>
+    <div class="pipeline">
+        <span class="pipeline-step">LLaMA</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Llama 2 (RLHF chat)</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Mistral 7B (efficiency)</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Mixtral (sparse MoE)</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">DeepSeek-V3 (frontier open)</span>
+    </div>
+</header>
+
+<section class="slide" id="slide-00">
+    <div class="slide-number">00</div>
+    <h2>The Five Publications</h2>
+    <p>Five papers chart the arc of open-weights large language models &mdash; from the first research checkpoint that proved you could beat GPT-3 with a fraction of the parameters, to a frontier-class 671B mixture-of-experts trained for a famously small budget. Each one introduced an architectural or efficiency idea that the whole field now takes for granted.</p>
+    <ul class="contents-list">
+        <li><a href="#slide-01">LLaMA &mdash; Open and Efficient Foundation Language Models</a></li>
+        <li><a href="#slide-02">Llama 2 &mdash; Open Foundation and Fine-Tuned Chat Models</a></li>
+        <li><a href="#slide-03">Mistral 7B &mdash; Sliding-Window Attention &amp; GQA</a></li>
+        <li><a href="#slide-04">Mixtral of Experts &mdash; Sparse Mixture-of-Experts</a></li>
+        <li><a href="#slide-05">DeepSeek-V3 &mdash; MLA, Auxiliary-Loss-Free MoE &amp; FP8</a></li>
+        <li><a href="#slide-06">What to Take Away</a></li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-01">
+    <div class="slide-number">01</div>
+    <h2>LLaMA &mdash; Open and Efficient Foundation Language Models</h2>
+    <p><strong>Touvron et al. (Meta AI)</strong> &middot; <span class="badge ok">2023</span> &middot; <code>arXiv:2302.13971</code></p>
+
+    <h3>The problem</h3>
+    <p>The prevailing wisdom (and the GPT-3 paper) suggested that capability scaled with parameter count, so the largest models won. But Hoffmann et al.'s Chinchilla work showed that, for a fixed compute budget, most large models were badly <em>under-trained</em>. Worse, the strongest models were closed APIs trained on undisclosed data, leaving the research community unable to study, reproduce, or build on them.</p>
+
+    <h3>The contribution</h3>
+    <p>LLaMA is a family of decoder-only transformers (7B, 13B, 33B, 65B) trained <strong>only on publicly available data</strong> &mdash; no proprietary or instruction-tuning corpora. By spending the compute budget on more tokens rather than more parameters, <strong>LLaMA-13B outperforms GPT-3 (175B) on most benchmarks</strong> while being small enough to run on a single GPU. The architecture bundles three now-standard refinements over the vanilla transformer:</p>
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel accent-border">
+            <h4>Pre-normalisation (RMSNorm)</h4>
+            <p>Normalise the <em>input</em> of each sub-layer instead of the output, using <strong>RMSNorm</strong> (Zhang &amp; Sennrich) rather than LayerNorm. Drops the mean-centring and bias terms &mdash; cheaper and more stable for deep stacks.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>SwiGLU activations</h4>
+            <p>Replace the ReLU feed-forward with a <strong>SwiGLU</strong> gated unit (Shazeer). A gating branch multiplies a SiLU-activated projection, improving quality per parameter; the hidden dim is scaled to keep FLOPs comparable.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Rotary embeddings (RoPE)</h4>
+            <p>Drop absolute position embeddings for <strong>RoPE</strong> (Su et al.), which rotates query/key vectors by a position-dependent angle. Encodes <em>relative</em> position directly in attention and extrapolates more gracefully.</p>
+        </div>
+    </div>
+
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 700 220" width="700" height="220" xmlns="http://www.w3.org/2000/svg">
+            <style>
+                .lc-lbl { fill: #8b949e; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+                .lc-ttl { fill: #76B900; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 12px; }
+                .lc-axis { stroke: #21262d; stroke-width: 1; }
+            </style>
+            <text x="10" y="18" class="lc-ttl">Params vs benchmark wins &mdash; LLaMA-13B beats GPT-3 175B (illustrative)</text>
+            <line x1="60" y1="190" x2="660" y2="190" class="lc-axis"/>
+            <line x1="60" y1="40"  x2="60"  y2="190" class="lc-axis"/>
+            <!-- GPT-3 175B big dim bar -->
+            <rect x="120" y="70" width="120" height="120" fill="#8b949e22" stroke="#8b949e" stroke-width="1"/>
+            <text x="125" y="62" class="lc-lbl">GPT-3 &mdash; 175B params</text>
+            <circle cx="180" cy="95" r="6" fill="#8b949e"/>
+            <text x="150" y="115" class="lc-lbl">score &asymp; 100%</text>
+            <!-- LLaMA 13B small accent bar -->
+            <rect x="420" y="170" width="40" height="20" fill="#76B90022" stroke="#76B900" stroke-width="1"/>
+            <text x="380" y="162" class="lc-lbl">LLaMA-13B &mdash; 13B params</text>
+            <circle cx="440" cy="88" r="6" fill="#76B900"/>
+            <text x="470" y="92" class="lc-lbl">&ge; GPT-3 on most tasks</text>
+            <line x1="180" y1="95" x2="440" y2="88" stroke="#76B900" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="40" y="44" class="lc-lbl" text-anchor="end">quality</text>
+            <text x="650" y="206" class="lc-lbl" text-anchor="end">parameter count &rarr;</text>
+        </svg>
+    </div>
+
+    <h3>Why it matters to a practising engineer</h3>
+    <p>LLaMA's weights leaked within a week and, despite a research-only license, <strong>catalysed the entire open-weights ecosystem</strong> &mdash; Alpaca, Vicuna, llama.cpp, QLoRA and the whole local-inference stack descend from this checkpoint. The architectural triad (RMSNorm + SwiGLU + RoPE) became the de-facto template that almost every later open model, including the four that follow, builds on.</p>
+
+    <div class="callout">
+        <div class="callout-label">The takeaway</div>
+        <p>Tokens, not just parameters, buy capability. A well-trained 13B model on consumer hardware can match a 175B API model &mdash; which is why "small, open, fine-tunable" became a viable engineering strategy overnight.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-02">
+    <div class="slide-number">02</div>
+    <h2>Llama 2 &mdash; Open Foundation and Fine-Tuned Chat Models</h2>
+    <p><strong>Touvron et al. (Meta AI)</strong> &middot; <span class="badge ok">2023</span> &middot; <code>arXiv:2307.09288</code></p>
+
+    <h3>The problem</h3>
+    <p>LLaMA was research-only and base-only: no commercial license and no aligned chat model. To make open weights genuinely useful in products, you need (1) a license businesses can ship on, and (2) a model that is helpful <em>and</em> safe in multi-turn conversation, not just a raw next-token predictor.</p>
+
+    <h3>The contribution</h3>
+    <p>Llama 2 ships 7B/13B/70B base models under a <strong>permissive commercial license</strong>, plus <strong>Llama 2-Chat</strong>, aligned with a full RLHF pipeline. The alignment recipe and two attention refinements are the headline ideas:</p>
+    <ul>
+        <li><strong>SFT &rarr; RLHF</strong>: supervised fine-tuning followed by iterative RLHF, combining <strong>rejection sampling</strong> (sample many, keep the best per a reward model) with <strong>PPO</strong>; two separate reward models score helpfulness and safety independently.</li>
+        <li><strong>Grouped-Query Attention (GQA)</strong> at 70B: multiple query heads share a single key/value head, shrinking the KV cache and speeding up inference at long context with negligible quality loss.</li>
+        <li><strong>Ghost Attention (GAtt)</strong>: a fine-tuning trick that keeps a system instruction (e.g. "always answer in French") salient across many turns, fixing the classic "model forgets the system prompt" failure.</li>
+        <li><strong>Extensive safety &amp; red-team work</strong>: safety-specific RLHF, context distillation, and a documented red-teaming programme.</li>
+    </ul>
+
+    <div class="diagram-vertical">
+        <div class="diagram-box dim">Pretrained base (2T tokens)</div>
+        <div class="diagram-arrow">&darr;</div>
+        <div class="diagram-box">Supervised Fine-Tuning (SFT)</div>
+        <div class="diagram-arrow">&darr;</div>
+        <div class="diagram-box accent">Reward models &mdash; helpfulness &amp; safety</div>
+        <div class="diagram-arrow">&darr;</div>
+        <div class="diagram-box accent">RLHF: rejection sampling + PPO (iterated)</div>
+        <div class="diagram-arrow">&darr;</div>
+        <div class="diagram-box accent">Llama 2-Chat (+ Ghost Attention)</div>
+    </div>
+
+    <h3>Why it matters to a practising engineer</h3>
+    <p>Llama 2 is the model that made open weights <em>shippable</em>. The permissive license unblocked commercial deployment; <strong>GQA is now standard</strong> in nearly every modern model because it is the single cheapest way to cut KV-cache memory; and the paper is still the most detailed public description of an end-to-end RLHF pipeline you can read.</p>
+
+    <div class="callout">
+        <div class="callout-label">The takeaway</div>
+        <p>Alignment is an engineering pipeline, not a single step. If you ever fine-tune a chat model, the SFT &rarr; reward-model &rarr; RLHF structure here is the canonical reference &mdash; and GQA is free latency you should expect from any serving stack.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-03">
+    <div class="slide-number">03</div>
+    <h2>Mistral 7B &mdash; Sliding-Window Attention &amp; GQA</h2>
+    <p><strong>Jiang et al. (Mistral AI)</strong> &middot; <span class="badge ok">2023</span> &middot; <code>arXiv:2310.06825</code></p>
+
+    <h3>The problem</h3>
+    <p>Standard self-attention costs O(n&sup2;) in sequence length, so long context is expensive in both compute and KV-cache memory. Llama 2 13B set the small-model quality bar &mdash; could a 7B model beat it while being cheaper to serve at long context?</p>
+
+    <h3>The contribution</h3>
+    <p>Mistral 7B <strong>outperforms Llama 2 13B</strong> across benchmarks while using fewer parameters, by combining three efficiency mechanisms under an <strong>Apache 2.0</strong> license:</p>
+    <ul>
+        <li><strong>Sliding Window Attention (SWA)</strong>: each token attends only to the previous <code>W</code> tokens (W = 4096). Because attention stacks, information still propagates across layers &mdash; after <code>k</code> layers a token can reach roughly <code>k&times;W</code> tokens back &mdash; giving long effective context at linear cost.</li>
+        <li><strong>Grouped-Query Attention (GQA)</strong>: shared KV heads for faster inference and a smaller cache.</li>
+        <li><strong>Rolling-buffer KV cache</strong>: since attention never looks back further than <code>W</code>, the cache is a fixed-size ring buffer of length <code>W</code> &mdash; memory stops growing with sequence length.</li>
+    </ul>
+
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 560 300" width="560" height="300" xmlns="http://www.w3.org/2000/svg">
+            <style>
+                .sw-lbl { fill: #8b949e; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+                .sw-ttl { fill: #76B900; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 12px; }
+                .sw-on  { fill: #76B90033; stroke: #76B900; stroke-width: 1; }
+                .sw-off { fill: #0d1117; stroke: #21262d; stroke-width: 1; }
+            </style>
+            <text x="10" y="18" class="sw-ttl">Sliding-window attention mask (W = 3, future masked)</text>
+            <text x="265" y="40" class="sw-lbl">key position j &rarr;</text>
+            <text x="14" y="160" class="sw-lbl" transform="rotate(-90 14 160)">query i &rarr;</text>
+            <!-- 7x7 grid: cell on if (i-W < j <= i) i.e. causal + window 3 -->
+            <!-- generated rows -->
+            <!-- row i=0 -->
+            <rect x="40"  y="55"  width="32" height="32" class="sw-on"/>
+            <rect x="76"  y="55"  width="32" height="32" class="sw-off"/>
+            <rect x="112" y="55"  width="32" height="32" class="sw-off"/>
+            <rect x="148" y="55"  width="32" height="32" class="sw-off"/>
+            <rect x="184" y="55"  width="32" height="32" class="sw-off"/>
+            <rect x="220" y="55"  width="32" height="32" class="sw-off"/>
+            <rect x="256" y="55"  width="32" height="32" class="sw-off"/>
+            <!-- row i=1 -->
+            <rect x="40"  y="91"  width="32" height="32" class="sw-on"/>
+            <rect x="76"  y="91"  width="32" height="32" class="sw-on"/>
+            <rect x="112" y="91"  width="32" height="32" class="sw-off"/>
+            <rect x="148" y="91"  width="32" height="32" class="sw-off"/>
+            <rect x="184" y="91"  width="32" height="32" class="sw-off"/>
+            <rect x="220" y="91"  width="32" height="32" class="sw-off"/>
+            <rect x="256" y="91"  width="32" height="32" class="sw-off"/>
+            <!-- row i=2 -->
+            <rect x="40"  y="127" width="32" height="32" class="sw-on"/>
+            <rect x="76"  y="127" width="32" height="32" class="sw-on"/>
+            <rect x="112" y="127" width="32" height="32" class="sw-on"/>
+            <rect x="148" y="127" width="32" height="32" class="sw-off"/>
+            <rect x="184" y="127" width="32" height="32" class="sw-off"/>
+            <rect x="220" y="127" width="32" height="32" class="sw-off"/>
+            <rect x="256" y="127" width="32" height="32" class="sw-off"/>
+            <!-- row i=3 -->
+            <rect x="40"  y="163" width="32" height="32" class="sw-off"/>
+            <rect x="76"  y="163" width="32" height="32" class="sw-on"/>
+            <rect x="112" y="163" width="32" height="32" class="sw-on"/>
+            <rect x="148" y="163" width="32" height="32" class="sw-on"/>
+            <rect x="184" y="163" width="32" height="32" class="sw-off"/>
+            <rect x="220" y="163" width="32" height="32" class="sw-off"/>
+            <rect x="256" y="163" width="32" height="32" class="sw-off"/>
+            <!-- row i=4 -->
+            <rect x="40"  y="199" width="32" height="32" class="sw-off"/>
+            <rect x="76"  y="199" width="32" height="32" class="sw-off"/>
+            <rect x="112" y="199" width="32" height="32" class="sw-on"/>
+            <rect x="148" y="199" width="32" height="32" class="sw-on"/>
+            <rect x="184" y="199" width="32" height="32" class="sw-on"/>
+            <rect x="220" y="199" width="32" height="32" class="sw-off"/>
+            <rect x="256" y="199" width="32" height="32" class="sw-off"/>
+            <!-- row i=5 -->
+            <rect x="40"  y="235" width="32" height="32" class="sw-off"/>
+            <rect x="76"  y="235" width="32" height="32" class="sw-off"/>
+            <rect x="112" y="235" width="32" height="32" class="sw-off"/>
+            <rect x="148" y="235" width="32" height="32" class="sw-on"/>
+            <rect x="184" y="235" width="32" height="32" class="sw-on"/>
+            <rect x="220" y="235" width="32" height="32" class="sw-on"/>
+            <rect x="256" y="235" width="32" height="32" class="sw-off"/>
+            <!-- legend -->
+            <rect x="360" y="60" width="20" height="20" class="sw-on"/>
+            <text x="388" y="75" class="sw-lbl">attends</text>
+            <rect x="360" y="90" width="20" height="20" class="sw-off"/>
+            <text x="388" y="105" class="sw-lbl">masked</text>
+            <text x="360" y="150" class="sw-lbl">Cache holds only</text>
+            <text x="360" y="168" class="sw-lbl">W keys/values &mdash;</text>
+            <text x="360" y="186" class="sw-lbl">fixed-size ring buffer.</text>
+        </svg>
+    </div>
+
+    <h3>Why it matters to a practising engineer</h3>
+    <p>Mistral 7B became the default "small, strong, truly-open" base for fine-tuning and local deployment, and proved that <strong>architecture, not just scale, drives the quality/cost frontier</strong>. The rolling-buffer cache is a clean illustration of how a serving constraint (bounded memory) can be designed directly into the attention pattern.</p>
+
+    <div class="callout">
+        <div class="callout-label">The takeaway</div>
+        <p>When context length hurts your memory budget, the fix is often architectural, not bigger hardware. SWA + a rolling KV cache give you long effective context with a flat memory footprint &mdash; and Apache 2.0 means no license friction.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-04">
+    <div class="slide-number">04</div>
+    <h2>Mixtral of Experts &mdash; Sparse Mixture-of-Experts</h2>
+    <p><strong>Jiang et al. (Mistral AI)</strong> &middot; <span class="badge ok">2024</span> &middot; <code>arXiv:2401.04088</code></p>
+
+    <h3>The problem</h3>
+    <p>Quality scales with parameters, but a dense model pays for <em>every</em> parameter on <em>every</em> token. You want the capacity of a large model with the inference cost of a small one. How do you decouple total parameters from per-token compute?</p>
+
+    <h3>The contribution</h3>
+    <p>Mixtral 8x7B is a <strong>Sparse Mixture-of-Experts (SMoE)</strong> decoder. Each transformer layer replaces the single feed-forward block with <strong>8 expert FFNs</strong>; a lightweight <strong>router</strong> picks the <strong>top-2 experts per token</strong> and combines their outputs by gating weight. The result: <strong>47B total parameters but only ~13B active per token</strong>. Mixtral matches or beats Llama 2 70B and GPT-3.5 at far lower inference cost, again under <strong>Apache 2.0</strong>.</p>
+
+    <div class="diagram-flow">
+        <div class="diagram-box accent">Token<br><small>hidden state</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box accent">Router<br><small>softmax gate</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box">Expert 1</div>
+        <div class="diagram-box accent">Expert 2 &#10003;</div>
+        <div class="diagram-box dim">Expert 3</div>
+        <div class="diagram-box dim">Expert 4</div>
+        <div class="diagram-box accent">Expert 5 &#10003;</div>
+        <div class="diagram-box dim">Expert 6&hellip;8</div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box accent">&Sigma; gate&times;expert</div>
+    </div>
+    <p style="font-size:0.82rem;">Top-2 routing: the router selects the two highest-scoring experts (here 2 and 5) and the output is their gate-weighted sum. The other six experts are skipped for this token &mdash; that is where the compute saving comes from.</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Model</th><th>Total params</th><th>Active / token</th><th>Context</th><th>License</th></tr></thead>
+            <tbody>
+                <tr><td>LLaMA-65B</td><td>65 B</td><td>65 B (dense)</td><td>2 K</td><td>Research-only</td></tr>
+                <tr><td>Llama 2 70B</td><td>70 B</td><td>70 B (dense)</td><td>4 K</td><td>Permissive (commercial)</td></tr>
+                <tr><td>Mistral 7B</td><td>7 B</td><td>7 B (dense)</td><td>8 K (SWA)</td><td>Apache 2.0</td></tr>
+                <tr><td>Mixtral 8x7B</td><td>47 B</td><td>~13 B (top-2 of 8)</td><td>32 K</td><td>Apache 2.0</td></tr>
+                <tr><td>DeepSeek-V3</td><td>671 B</td><td>~37 B (MoE)</td><td>128 K</td><td>Open weights</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Why it matters to a practising engineer</h3>
+    <p>Mixtral made <strong>open MoE practical</strong> and forced a mental split between two numbers that engineers must now track separately: <em>total parameters</em> (which dictate VRAM/storage &mdash; all experts must be resident) and <em>active parameters</em> (which dictate FLOPs/latency). MoE serving has its own headaches &mdash; expert load balancing, all-to-all communication &mdash; but the cost/quality trade is compelling.</p>
+
+    <div class="callout">
+        <div class="callout-label">The takeaway</div>
+        <p>"How big is the model?" is now two questions. Mixtral's 47B-total / 13B-active split means you size GPU memory for the total but estimate throughput from the active count &mdash; a distinction that carries straight into DeepSeek-V3.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-05">
+    <div class="slide-number">05</div>
+    <h2>DeepSeek-V3 &mdash; MLA, Auxiliary-Loss-Free MoE &amp; FP8</h2>
+    <p><strong>DeepSeek-AI</strong> &middot; <span class="badge ok">2024</span> &middot; <code>arXiv:2412.19437</code></p>
+
+    <h3>The problem</h3>
+    <p>Scaling MoE to frontier quality exposes three pain points: (1) the KV cache becomes the memory bottleneck at long context; (2) the standard auxiliary load-balancing loss that keeps experts evenly used <em>fights</em> the language-modelling objective and hurts quality; and (3) training a 600B-class model is ruinously expensive in FP16/BF16.</p>
+
+    <h3>The contribution</h3>
+    <p>DeepSeek-V3 is a <strong>671B-parameter MoE with ~37B active per token</strong> that reaches frontier-class quality on a famously low compute budget, with <strong>open weights</strong>. Four ideas do the heavy lifting:</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Multi-head Latent Attention (MLA)</h4>
+            <p>Compress keys and values into a low-rank <strong>latent vector</strong> that is cached instead of full K/V. Shrinks the KV cache dramatically &mdash; the enabler for cheap 128K context &mdash; while preserving attention quality.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Auxiliary-loss-free balancing</h4>
+            <p>The <strong>DeepSeekMoE</strong> design (fine-grained + shared experts) uses a per-expert <strong>bias</strong> adjusted dynamically to balance load, with <em>no</em> auxiliary loss. Removes the quality penalty that load-balancing losses normally impose.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>FP8 mixed-precision training</h4>
+            <p>One of the first production-scale runs to train largely in <strong>FP8</strong>, with fine-grained quantisation and careful accumulation. Roughly halves memory and compute versus BF16 &mdash; central to the low budget.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Multi-token prediction (MTP)</h4>
+            <p>An auxiliary objective that predicts <strong>several future tokens</strong> per step, densifying the training signal and improving quality. The extra heads also enable speculative-style decoding at inference.</p>
+        </div>
+    </div>
+
+    <div class="diagram-flow">
+        <div class="diagram-box">Full K, V<br><small>per head</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box accent">Down-project<br><small>to latent c</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box accent">Cache latent c<br><small>tiny KV cache</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box accent">Up-project<br><small>reconstruct K, V</small></div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box">Attention</div>
+    </div>
+
+    <h3>Why it matters to a practising engineer</h3>
+    <p>DeepSeek-V3 showed that <strong>frontier-class quality is achievable with open weights and a startup-scale budget</strong>, upending assumptions about who can train top-tier models. MLA is now a sought-after KV-cache optimisation, and the auxiliary-loss-free balancing and FP8 recipe are widely cited templates for anyone building large MoE systems.</p>
+
+    <div class="callout">
+        <div class="callout-label">The takeaway</div>
+        <p>The frontier is no longer closed. MLA shrinks the KV cache, FP8 shrinks the training bill, and auxiliary-loss-free MoE removes the balancing tax &mdash; together they put a 671B open model within reach of a far smaller compute budget than anyone expected.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-06">
+    <div class="slide-number">06</div>
+    <h2>What to Take Away</h2>
+    <ul>
+        <li><strong>The open-weights lineage is real.</strong> LLaMA &rarr; Llama 2 &rarr; Mistral &rarr; Mixtral &rarr; DeepSeek-V3 is a direct chain of borrowed and improved ideas &mdash; the RMSNorm + RoPE + SwiGLU template from LLaMA still underpins all of them.</li>
+        <li><strong>Tokens beat parameters.</strong> LLaMA-13B matching GPT-3 175B proved that training data and efficiency, not raw size, define the quality/cost frontier.</li>
+        <li><strong>Alignment is a pipeline.</strong> Llama 2's SFT &rarr; reward-model &rarr; RLHF (rejection sampling + PPO) recipe, plus GQA and Ghost Attention, made open chat models both shippable and serviceable.</li>
+        <li><strong>Attention is where efficiency lives.</strong> GQA (shared KV heads), Mistral's sliding-window attention + rolling KV cache, and DeepSeek's MLA latent cache are all attacks on the same enemy: KV-cache cost at long context.</li>
+        <li><strong>Total &ne; active parameters.</strong> Sparse MoE (Mixtral top-2 of 8; DeepSeek-V3 671B/37B) decouples capacity from per-token compute &mdash; size VRAM for total, estimate latency from active.</li>
+        <li><strong>The frontier opened up.</strong> DeepSeek-V3's MLA + FP8 + auxiliary-loss-free MoE put frontier quality within a startup-scale budget, with open weights.</li>
+    </ul>
+
+    <div class="callout">
+        <div class="callout-label">Where to next</div>
+        <p>These models are powerful and freely downloadable &mdash; which makes their failure modes everyone's problem. <strong>Presentation 10 &mdash; Safety, Jailbreaks &amp; Security</strong> covers adversarial prompting, jailbreak techniques, prompt injection, and the red-teaming and guardrail work needed to deploy open models responsibly.</p>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>Part of the <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Key_Publications">Key LLM Publications Series</a></p>
+    <p style="margin-top:0.5rem;font-size:0.8rem;"><a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Key_Publications">Back to Series Index</a></p>
+</footer>
+<script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.slide').forEach(slide => {
+        slide.style.opacity = '0';
+        slide.style.transform = 'translateY(30px)';
+        slide.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(slide);
+    });
+</script>
+</body>
+</html>
